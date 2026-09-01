@@ -16,12 +16,12 @@ return {
   opts = {
     window = {
       position = 'right',
-    },
-    filesystem = {
-      window = {
-        mappings = {
-          ['\\'] = 'close_window',
-        },
+      mappings = {
+        -- Defined here rather than under `filesystem` so that `\` closes the
+        -- window from every source, not just the file tree. Neo-tree merges
+        -- these top-level mappings into each source; a source-level
+        -- `window.mappings` table only applies to that one source.
+        ['\\'] = 'close_window',
       },
     },
   },
