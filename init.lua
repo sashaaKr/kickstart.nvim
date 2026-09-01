@@ -171,6 +171,12 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+-- Better diff alignment: pairs up similar lines inside a changed block instead
+-- of dumping the whole block as one add/remove. Applies to every diff view,
+-- including `<leader>hd` (gitsigns.diffthis) and `:Neotree git_status`.
+-- See `:help 'diffopt'`
+vim.opt.diffopt:append 'linematch:60'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -352,6 +358,7 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>g', group = '[G]it' },
       },
     },
   },
