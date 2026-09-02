@@ -171,11 +171,17 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
--- Better diff alignment: pairs up similar lines inside a changed block instead
--- of dumping the whole block as one add/remove. Applies to every diff view,
--- including `<leader>hd` (gitsigns.diffthis) and `:Neotree git_status`.
+-- Better diff alignment: inside a hunk that both adds and changes lines, pair
+-- up the lines that correspond instead of aligning them by position. Affects
+-- any two-pane diff, `<leader>hd` (gitsigns.diffthis) included.
+--
+-- Neovim 0.11+ already ships `linematch:40` in the default 'diffopt', so this
+-- only does something on 0.10 and older. The guard avoids appending a second,
+-- conflicting linematch entry on versions that already have one.
 -- See `:help 'diffopt'`
-vim.opt.diffopt:append 'linematch:60'
+if not vim.o.diffopt:find 'linematch' then
+  vim.opt.diffopt:append 'linematch:60'
+end
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
