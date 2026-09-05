@@ -146,6 +146,50 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
+-- How diffs are computed and rendered. Set as a whole rather than appended, so
+-- there is one place to read the answer from and no dependence on what the
+-- Neovim default happens to be in a given version. See `:help 'diffopt'`.
+vim.opt.diffopt = {
+  'internal', -- use the built-in diff library, not an external `diff` binary
+  'filler', -- show filler lines so both sides stay vertically aligned
+  'closeoff', -- leave diff mode when the last other diff window closes
+  'vertical', -- `:diffsplit` opens side-by-side, not stacked
+  'algorithm:histogram', -- better hunk boundaries than the default myers
+  'indent-heuristic', -- shift hunks so they line up with indentation
+  'linematch:60', -- pair up changed lines within a hunk, so the highlight
+  -- lands on the words that changed instead of the whole line
+  'context:6', -- unchanged lines kept visible around each hunk when folded
+  'foldcolumn:1',
+}
+
+-- Filler lines (the "this side has nothing here" rows) render as a hatched
+-- column instead of a solid block of dashes.
+vim.opt.fillchars:append { diff = '╱' }
+
+-- Folding in diff windows.
+--  `folding.lua` sets a global `foldlevel` of 99 so normal files open fully
+--  unfolded. In a diff that is the wrong default: it means scrolling through
+--  hundreds of identical lines to find the handful that changed. Diff windows
+--  get `foldlevel = 0` instead, which collapses everything outside the
+--  `context:6` lines around each hunk. `zR` opens it all back up, and dropping
+--  this autocmd restores the old behaviour.
+vim.api.nvim_create_autocmd('OptionSet', {
+  group = vim.api.nvim_create_augroup('kickstart-diff-folds', { clear = true }),
+  pattern = 'diff',
+  desc = 'Collapse unchanged regions when a window enters diff mode',
+  callback = function()
+    if vim.wo.diff then
+      vim.wo.foldmethod = 'diff'
+      vim.wo.foldlevel = 0
+      vim.wo.wrap = false
+    else
+      -- Back to the normal-file defaults when the window leaves diff mode.
+      vim.wo.foldlevel = 99
+      vim.wo.wrap = vim.o.wrap
+    end
+  end,
+})
+
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
@@ -929,6 +973,11 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    -- nvim-treesitter's default branch is now `main`, a rewrite that has no
+    -- `nvim-treesitter.configs` module — so without this pin the `main = …`
+    -- line below fails on every startup and you get no highlighting anywhere,
+    -- diff views included. Stay on `master` until this spec is ported.
+    branch = 'master',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`

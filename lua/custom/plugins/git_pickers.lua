@@ -1,16 +1,17 @@
--- "Show me every file I changed" — without installing anything new.
+-- Fuzzy-find your way into git: changed files, commits, branches.
 --
--- Both of these come from plugins that are already in the config, they just
--- had no keymap pointing at them:
+-- These are the *search* half of the git keymaps — pick a thing from a list.
+-- The *review* half lives in `diffview.lua` (<leader>gd / gD / gh / gH), and
+-- the per-hunk half lives in `kickstart/plugins/gitsigns.lua` (<leader>h…).
 --
---   <leader>gs  telescope `git_status` — fuzzy list of changed files with a
---               live diff in the preview pane. <Tab> stages/unstages the file
---               under the cursor, <CR> opens it (then <leader>hd for the
---               side-by-side diff).
---   <leader>ge  neo-tree `git_status` — the changed files as a tree in the
---               sidebar, closest thing to VSCode's Source Control panel.
---   <leader>gc  telescope `git_commits` — repo history, <CR> checks out.
---   <leader>gf  telescope `git_bcommits` — history of the current file only.
+-- The whole <leader>g namespace, in one place:
+--
+--   gd  diffview: uncommitted changes          gs  telescope: changed files
+--   gD  diffview: branch vs base               gc  telescope: commits
+--   gr  diffview: revision range…              gb  telescope: branches
+--   gh  diffview: file history                 ge  neo-tree: changed files tree
+--   gH  diffview: repo history
+--   gx  diffview: close
 --
 -- Note that these are `keys` entries on plugins declared elsewhere; lazy.nvim
 -- merges specs for the same plugin, so this only adds keymaps and does not
@@ -25,6 +26,7 @@ return {
         function()
           require('telescope.builtin').git_status()
         end,
+        -- <Tab> stages/unstages the file under the cursor, <CR> opens it.
         desc = '[G]it [S]tatus (changed files)',
       },
       {
@@ -35,11 +37,11 @@ return {
         desc = '[G]it [C]ommits',
       },
       {
-        '<leader>gf',
+        '<leader>gb',
         function()
-          require('telescope.builtin').git_bcommits()
+          require('telescope.builtin').git_branches()
         end,
-        desc = '[G]it commits for this [F]ile',
+        desc = '[G]it [B]ranches',
       },
     },
   },
