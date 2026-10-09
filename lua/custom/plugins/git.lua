@@ -1,4 +1,4 @@
--- Everything git, in one file.
+-- Git: review, search, blame, and how diffs are drawn.
 --
 -- Three layers, each answering a different question:
 --
@@ -6,8 +6,15 @@
 --   review     diffview          "what changed across this whole branch?"
 --   search     telescope/neo-tree "which file, commit or branch do I want?"
 --
--- plus the native-diff rendering options both gitsigns and diffview draw with,
--- and the blame virtual text.
+-- This file owns the review and search layers, the blame virtual text, and the
+-- native-diff rendering options that both gitsigns and diffview draw with.
+--
+-- The per-hunk layer is kickstart's own: the gutter sign glyphs come from the
+-- gitsigns spec in `init.lua`, and the `<leader>h…` hunk keymaps from
+-- `lua/kickstart/plugins/gitsigns.lua`. Both are stock kickstart files, left
+-- untouched so upstream updates merge cleanly — look there to change a hunk
+-- mapping, and here for everything else. Their keymaps are listed below so
+-- this header is still the full picture.
 --
 -- The complete keymap set:
 --
@@ -19,7 +26,7 @@
 --   <leader>gH  repo history
 --   <leader>gx  close the diff view
 --
---   PER-HUNK (gitsigns, buffer-local)     TOGGLES
+--   PER-HUNK (gitsigns, elsewhere)        TOGGLES (gitsigns, elsewhere)
 --   ]c / [c     next / prev change        <leader>tb  inline blame
 --   <leader>hs  stage hunk (n and v)      <leader>tD  show deleted
 --   <leader>hr  reset hunk (n and v)
@@ -41,8 +48,8 @@
 
 --- Configure how Neovim computes and draws diffs. This is not specific to any
 --- one plugin — gitsigns' `diffthis` and every diffview window render through
---- it — so it only needs to run once, at startup. It is parked on the gitsigns
---- spec's `init` below because gitsigns is the git plugin that always loads.
+--- it — so it only needs to run once, at startup. It is parked on the diffview
+--- spec's `init` below, which is a spec this file owns outright.
 local function setup_diff_rendering()
   -- Set as a whole rather than appended, so there is one place to read the
   -- answer from and no dependence on what the Neovim default happens to be in
@@ -127,78 +134,18 @@ end
 -- Specs
 -- ---------------------------------------------------------------------------
 --
--- Several of these are `keys`/`opts` additions to plugins declared in
--- `init.lua`; lazy.nvim merges specs for the same plugin, so they extend the
--- existing configuration rather than replacing it.
+-- The telescope and neo-tree entries below are `keys` additions to plugins
+-- declared in `init.lua`; lazy.nvim merges specs for the same plugin, so they
+-- add keymaps without re-declaring or overriding those plugins' own setup.
 
 return {
-  { -- Per-hunk: gutter signs, staging, blame, and the native diff options
-    'lewis6991/gitsigns.nvim',
-    init = setup_diff_rendering,
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-      on_attach = function(bufnr)
-        local gitsigns = require 'gitsigns'
-
-        local function map(mode, l, r, opts)
-          opts = opts or {}
-          opts.buffer = bufnr
-          vim.keymap.set(mode, l, r, opts)
-        end
-
-        -- Navigation
-        map('n', ']c', function()
-          if vim.wo.diff then
-            vim.cmd.normal { ']c', bang = true }
-          else
-            gitsigns.nav_hunk 'next'
-          end
-        end, { desc = 'Jump to next git [c]hange' })
-
-        map('n', '[c', function()
-          if vim.wo.diff then
-            vim.cmd.normal { '[c', bang = true }
-          else
-            gitsigns.nav_hunk 'prev'
-          end
-        end, { desc = 'Jump to previous git [c]hange' })
-
-        -- Actions
-        -- visual mode
-        map('v', '<leader>hs', function()
-          gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'git [s]tage hunk' })
-        map('v', '<leader>hr', function()
-          gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'git [r]eset hunk' })
-        -- normal mode
-        map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'git [s]tage hunk' })
-        map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'git [r]eset hunk' })
-        map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'git [S]tage buffer' })
-        map('n', '<leader>hu', gitsigns.stage_hunk, { desc = 'git [u]ndo stage hunk' })
-        map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'git [R]eset buffer' })
-        map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'git [p]review hunk' })
-        map('n', '<leader>hb', gitsigns.blame_line, { desc = 'git [b]lame line' })
-        map('n', '<leader>hd', gitsigns.diffthis, { desc = 'git [d]iff against index' })
-        map('n', '<leader>hD', function()
-          gitsigns.diffthis '@'
-        end, { desc = 'git [D]iff against last commit' })
-        -- Toggles
-        map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git show [b]lame line' })
-        map('n', '<leader>tD', gitsigns.preview_hunk_inline, { desc = '[T]oggle git show [D]eleted' })
-      end,
-    },
-  },
-
   { -- Review: every changed file in one panel, side-by-side, plus a merge tool
     'sindrets/diffview.nvim',
     dependencies = { 'nvim-lua/plenary.nvim' },
+    -- lazy.nvim runs `init` for every spec during startup, including ones that
+    -- are otherwise lazy-loaded, so the diff options are in place before the
+    -- first diff is drawn without pulling diffview in at startup.
+    init = setup_diff_rendering,
     cmd = { 'DiffviewOpen', 'DiffviewClose', 'DiffviewFileHistory', 'DiffviewToggleFiles', 'DiffviewFocusFiles' },
     keys = {
       {
