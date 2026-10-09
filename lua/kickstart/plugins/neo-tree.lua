@@ -18,6 +18,11 @@ return {
       position = 'right',
     },
     filesystem = {
+      filtered_items = {
+        -- Show dotfiles/dot-folders (.github, .env, ...); toggle hidden items with `H`
+        hide_dotfiles = false,
+        never_show = { '.git', '.DS_Store' },
+      },
       window = {
         mappings = {
           ['\\'] = 'close_window',
