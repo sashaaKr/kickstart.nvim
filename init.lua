@@ -146,49 +146,9 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
--- How diffs are computed and rendered. Set as a whole rather than appended, so
--- there is one place to read the answer from and no dependence on what the
--- Neovim default happens to be in a given version. See `:help 'diffopt'`.
-vim.opt.diffopt = {
-  'internal', -- use the built-in diff library, not an external `diff` binary
-  'filler', -- show filler lines so both sides stay vertically aligned
-  'closeoff', -- leave diff mode when the last other diff window closes
-  'vertical', -- `:diffsplit` opens side-by-side, not stacked
-  'algorithm:histogram', -- better hunk boundaries than the default myers
-  'indent-heuristic', -- shift hunks so they line up with indentation
-  'linematch:60', -- pair up changed lines within a hunk, so the highlight
-  -- lands on the words that changed instead of the whole line
-  'context:6', -- unchanged lines kept visible around each hunk when folded
-  'foldcolumn:1',
-}
-
--- Filler lines (the "this side has nothing here" rows) render as a hatched
--- column instead of a solid block of dashes.
-vim.opt.fillchars:append { diff = '╱' }
-
--- Folding in diff windows.
---  `folding.lua` sets a global `foldlevel` of 99 so normal files open fully
---  unfolded. In a diff that is the wrong default: it means scrolling through
---  hundreds of identical lines to find the handful that changed. Diff windows
---  get `foldlevel = 0` instead, which collapses everything outside the
---  `context:6` lines around each hunk. `zR` opens it all back up, and dropping
---  this autocmd restores the old behaviour.
-vim.api.nvim_create_autocmd('OptionSet', {
-  group = vim.api.nvim_create_augroup('kickstart-diff-folds', { clear = true }),
-  pattern = 'diff',
-  desc = 'Collapse unchanged regions when a window enters diff mode',
-  callback = function()
-    if vim.wo.diff then
-      vim.wo.foldmethod = 'diff'
-      vim.wo.foldlevel = 0
-      vim.wo.wrap = false
-    else
-      -- Back to the normal-file defaults when the window leaves diff mode.
-      vim.wo.foldlevel = 99
-      vim.wo.wrap = vim.o.wrap
-    end
-  end,
-})
+-- NOTE: diff rendering (`diffopt`, filler characters, fold behaviour in diff
+-- windows) lives with the rest of the git configuration in
+-- `lua/custom/plugins/git.lua`.
 
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
@@ -316,22 +276,9 @@ require('lazy').setup({
   --        end,
   --    }
   --
-  -- Here is a more advanced example where we pass configuration
-  -- options to `gitsigns.nvim`.
-  --
-  -- See `:help gitsigns` to understand what the configuration keys do
-  { -- Adds git related signs to the gutter, as well as utilities for managing changes
-    'lewis6991/gitsigns.nvim',
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-    },
-  },
+  -- NOTE: gitsigns — and every other git plugin, keymap and diff setting — is
+  -- configured in `lua/custom/plugins/git.lua`, imported at the bottom of this
+  -- file along with the rest of `lua/custom/plugins/`.
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -395,6 +342,10 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        -- The git keymaps these two labels describe are defined in
+        -- `lua/custom/plugins/git.lua`. The labels have to stay here:
+        -- lazy.nvim replaces list-valued `opts` instead of appending, so a
+        -- second which-key spec elsewhere would drop the groups above.
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>g', group = '[G]it' },
       },
@@ -1016,7 +967,8 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
-  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  -- NOTE: kickstart's optional gitsigns module is gone; its keymaps were folded
+  -- into `lua/custom/plugins/git.lua` so all git configuration sits together.
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
