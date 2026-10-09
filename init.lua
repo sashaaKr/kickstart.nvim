@@ -419,6 +419,27 @@ require('lazy').setup({
         --   },
         -- },
         -- pickers = {}
+        defaults = {
+          -- Also grep inside dotfiles/dot-folders (.github, .env, ...), but never inside .git
+          vimgrep_arguments = {
+            'rg',
+            '--color=never',
+            '--no-heading',
+            '--with-filename',
+            '--line-number',
+            '--column',
+            '--smart-case',
+            '--hidden',
+            '--glob',
+            '!**/.git/*',
+          },
+        },
+        pickers = {
+          find_files = {
+            -- Show dotfiles/dot-folders too (still respects .gitignore), but skip .git
+            find_command = { 'rg', '--files', '--hidden', '--glob', '!**/.git/*' },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
