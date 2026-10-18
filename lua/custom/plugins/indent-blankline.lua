@@ -31,13 +31,13 @@ return {
       },
     },
     config = function(_, opts)
-      -- Pin the guide colors: the colorscheme's scope highlight blends into the
-      -- background, which made the current scope's guide vanish instead of stand out.
+      -- Pin the guide colors. Both must stay readable on the CursorLine background
+      -- (cyberdream: #3c4047), or the guides vanish on the line under the cursor.
       local hooks = require 'ibl.hooks'
       hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
-        vim.api.nvim_set_hl(0, 'IblIndent', { fg = '#3c4048' })
-        vim.api.nvim_set_hl(0, 'IblWhitespace', { fg = '#3c4048' })
-        vim.api.nvim_set_hl(0, 'IblScope', { fg = '#7b8496' })
+        vim.api.nvim_set_hl(0, 'IblIndent', { fg = '#5c6370' })
+        vim.api.nvim_set_hl(0, 'IblWhitespace', { fg = '#5c6370' })
+        vim.api.nvim_set_hl(0, 'IblScope', { fg = '#a0a8b7' })
       end)
       require('ibl').setup(opts)
     end,
