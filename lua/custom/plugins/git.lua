@@ -275,7 +275,9 @@ return {
       },
     },
   },
-
+  {
+    'tpope/vim-fugitive',
+  },
   { -- Blame as virtual text at the end of the current line
     'f-person/git-blame.nvim',
     event = 'VeryLazy',
