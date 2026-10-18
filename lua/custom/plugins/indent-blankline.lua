@@ -30,5 +30,16 @@ return {
         },
       },
     },
+    config = function(_, opts)
+      -- Pin the guide colors: the colorscheme's scope highlight blends into the
+      -- background, which made the current scope's guide vanish instead of stand out.
+      local hooks = require 'ibl.hooks'
+      hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+        vim.api.nvim_set_hl(0, 'IblIndent', { fg = '#3c4048' })
+        vim.api.nvim_set_hl(0, 'IblWhitespace', { fg = '#3c4048' })
+        vim.api.nvim_set_hl(0, 'IblScope', { fg = '#7b8496' })
+      end)
+      require('ibl').setup(opts)
+    end,
   },
 }
