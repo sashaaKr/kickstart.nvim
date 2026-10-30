@@ -41,6 +41,10 @@ return {
       vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = '#232429' })
       vim.api.nvim_set_hl(0, 'TreesitterContextBottom', { bg = '#232429', underline = true })
       vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#ffffff' })
+      -- Make floating windows stand out from the editor background
+      vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#1e2124' })
+      vim.api.nvim_set_hl(0, 'FloatBorder', { fg = '#5ea1ff', bg = '#1e2124' })
+      vim.api.nvim_set_hl(0, 'FloatTitle', { fg = '#5ea1ff', bg = '#1e2124', bold = true })
     end,
   },
 }

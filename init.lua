@@ -171,6 +171,12 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+-- Give floating windows (LSP hover, signature help, diagnostics, ...) a visible border
+-- so they don't blend into the buffer behind them. Requires Neovim 0.11+.
+pcall(function()
+  vim.o.winborder = 'rounded'
+end)
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -887,7 +893,8 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        menu = { border = 'rounded' },
+        documentation = { auto_show = false, auto_show_delay_ms = 500, window = { border = 'rounded' } },
       },
 
       sources = {
@@ -909,7 +916,7 @@ require('lazy').setup({
       fuzzy = { implementation = 'lua' },
 
       -- Shows a signature help window while you type arguments for a function
-      signature = { enabled = true },
+      signature = { enabled = true, window = { border = 'rounded' } },
     },
   },
 
