@@ -710,7 +710,29 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         gopls = {},
-        pyright = {},
+        pyright = {
+          -- Point pyright at the project's virtualenv (e.g. the `.venv` created by `uv sync`)
+          -- so imports resolve even when Neovim wasn't started from an activated venv.
+          before_init = function(_, config)
+            local root = config.root_dir or vim.fn.getcwd()
+            local candidates = {
+              vim.env.VIRTUAL_ENV,
+              vim.env.UV_PROJECT_ENVIRONMENT
+                and (vim.startswith(vim.env.UV_PROJECT_ENVIRONMENT, '/') and vim.env.UV_PROJECT_ENVIRONMENT or vim.fs.joinpath(root, vim.env.UV_PROJECT_ENVIRONMENT)),
+              vim.fs.joinpath(root, '.venv'),
+              vim.fs.joinpath(root, 'venv'),
+            }
+            for _, venv in ipairs(candidates) do
+              local python = venv and vim.fs.joinpath(venv, 'bin', 'python')
+              if python and vim.fn.executable(python) == 1 then
+                config.settings = vim.tbl_deep_extend('force', config.settings or {}, {
+                  python = { pythonPath = python },
+                })
+                return
+              end
+            end
+          end,
+        },
         rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
